@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="yes" ?>
+<plugin id="CerealGuy:MoreRecyclingBins">
+	<name>MoreRecyclingBins</name>
+	<author>CerealGuy</author>
+	<description>Get more control about recyclingbins. Add specific recycling boards for specific boards.</description>
+	<version>1.0</version>
+	<hooks>
+		<function point="admin_areas" function="MRB_admin_areas" filename="ManageMoreRecyclingBins" />
+	</hooks>
+	<acp-url>action=admin;area=morerecyclingbins</acp-url>
+	<database>
+		<tables>
+			<table if-exists="update" name="{db_prefix}morerecyclingboards">
+				<columns>
+					<column name="id_recyclingboard" type="mediumint" unsigned="yes"/>
+					<column name="boards" type="varchar"/>	
+				</columns>
+				<index type="primary">
+					<field>id</field>
+				</index>
+			</table>
+
+		</tables>
+	</database>
+</plugin>

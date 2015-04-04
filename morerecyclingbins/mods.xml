@@ -1,0 +1,33 @@
+<file name="RemoveTopic.php">
+	<operation>
+		<search position="after">$recycleTopics[] = $row['id_topic'];</search>
+		<add>
+				if(!isset($recycleBoards[$row['id_board']]))
+					$recycleBoards[$row['id_board']] = array();
+				$recycleBoards[$row['id_board']][] = $row['id_topic'];
+		</add>
+	</operation>
+	<operation>
+		<search position="after">$recycleTopics = array();</search>
+		<add>
+			// MoreRecyclingBoards: We need another array where save know in wich board the topic is
+			$recycleBoards = array();
+		</add>
+	</operation>
+	<operation>
+		<search position="replace">moveTopics($recycleTopics, $settings['recycle_board']);</search>
+		<add>
+			// Here we overwrite the move stuff
+			loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
+			$recyclingBins = get_morerecyclingbins();
+			foreach($recycleBoards as $board => $topis){
+				$recycle_board = find_recyclingboard($recyclingBins, $board);
+				$recycle_board = ($recyclingboard != false ? $recyclingboard : $settings['recycle_board']);
+				moveTopics($topics, $recycle_board);
+
+			}
+</add>
+	</operation>
+
+
+</file>
