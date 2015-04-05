@@ -22,7 +22,7 @@
 			$recyclingBins = get_morerecyclingbins();
 			foreach($recycleBoards as $board => $topis){
 				$recycle_board = find_recyclingboard($recyclingBins, $board);
-				$recycle_board = ($recyclingboard != false ? $recyclingboard : $settings['recycle_board']);
+				$recycle_board = ($recycle_board != false ? $recycle_board : $settings['recycle_board']);
 				moveTopics($topics, $recycle_board);
 
 			}
