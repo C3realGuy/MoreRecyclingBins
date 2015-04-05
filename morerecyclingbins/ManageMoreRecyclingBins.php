@@ -59,28 +59,13 @@ function ManageMoreRecyclingBins(){
 function MainRecyclingBins(){
 	global $context;
 	wetem::load('mrb_main');
-
-
-
-
 }
 
-function AddRecyclingBins($return_config = false){
+function AddRecyclingBins(){
 	global $txt, $context, $settings;
 	loadSource('ManageServer');
 	get_inline_board_list();
-	#loadPluginSource('CerealGUy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
-	
-	$config_vars = array(
-		array('callback', 'success_error_box'), // add template which displays success/error infos
-		array('boards', 'mrb_childboards'),
-		array('callback', 'select_board'),
-
-	);
-	if ($return_config)
-		return $config_vars;
-	// Saving?
-	#$mrb_bins = get_morerecyclingbins();
+	$context['mrb_modify'] = array('type' => 'add');
 	if (isset($_GET['save']))
 	{
 		
@@ -88,9 +73,9 @@ function AddRecyclingBins($return_config = false){
 		$rb = (int)$_POST['select_board'];
 		$rcbs = array();
 		// Check childboards (ripped from saveDBSettings())
-		if (isset($_POST['mrb_childboards']) && is_array($_POST['mrb_childboards']))
+		if (isset($_POST['affected_boards']) && is_array($_POST['affected_boards']))
 			
-			foreach ($_POST['mrb_childboards'] as $invar => $on)
+			foreach ($_POST['affected_boards'] as $invar => $on)
 				if (isset($context['board_array'][$invar]))
 					$rcbs[] = $invar;
 		if(empty($rb))
@@ -101,6 +86,11 @@ function AddRecyclingBins($return_config = false){
 		if(isset($context['mrb_recyclingbins'][$rb]))
 			$context['mrb_errors'][] = $context['board_names'][$rb]." is already a Recyclingboard. Please modify that one";
 
+		if(!empty($rb))
+			$context['mrb_modify']['recyclingboard'] = $rb; // set for template
+		if(!empty($rcbs))
+			$context['mrb_modify']['affected_boards'] = $rcbs;
+
 		if(empty($context['mrb_errors'])){
 			$rcbs = implode(',',$rcbs);
 			wesql::insert('', '{db_prefix}morerecyclingboards', array('id_recyclingboard' => 'int', 'boards' => 'string'), array($rb, $rcbs));
@@ -109,11 +99,8 @@ function AddRecyclingBins($return_config = false){
 
 
 	}
-	$context['post_url'] = '<URL>?action=admin;area=morerecyclingbins;sa=add;save';
-	$context['settings_title'] = $context['page_title'] = $txt['mrb'];
-	$context['mrb_edit'] = array('id' => 5);
-	wetem::load('show_settings');
-	prepareDBSettingContext($config_vars);
+	$context['page_title'] = $txt['mrb'];
+	wetem::load('mrb_modify');
 }
 
 function DeleteRecyclingBins(){
@@ -133,6 +120,64 @@ function DeleteRecyclingBins(){
 }
 
 function ModifyRecyclingBins(){
-	print "nöööp WIP";
+	global $context, $txt;
+	$context['mrb_modify'] = array('type' => 'modify');
+
+	$edit_id = isset($_GET['id']) ? (int)$_GET['id'] : '';
+	if(empty($edit_id))
+		$context['mrb_errors'][] = "No id set";
+	if(!isset($context['mrb_recyclingbins'][$edit_id]))
+		$context['mrb_errors'][] = $txt['mrb_error_no_such_recyclingboard'];
+
+	if(empty($context['mrb_errors'])){
+		// No errors we can proceed
+
+		loadSource('ManageServer');
+		get_inline_board_list();
+
+		// Set stuff for template
+		$context['mrb_modify']['recyclingboard'] = $edit_id;
+		$context['mrb_modify']['affected_boards'] = $context['mrb_recyclingbins'][$edit_id];
+
+		if (isset($_GET['save']))
+		{
+			
+			checkSession();
+			$rb = (int)$_POST['select_board'];
+			$rcbs = array();
+			// Check childboards (ripped from saveDBSettings())
+			if (isset($_POST['affected_boards']) && is_array($_POST['affected_boards']))
+				
+				foreach ($_POST['affected_boards'] as $invar => $on)
+					if (isset($context['board_array'][$invar]))
+						$rcbs[] = $invar;
+			if(empty($rb))
+				$context['mrb_errors'][] = $txt['mrb_error_no_recyclingboard_selected'];
+			if(empty($rcbs))
+				$context['mrb_errors'][] = $txt['mrb_error_no_recyclingboard_childs_selected'];
+	
+			// update for template
+			if(!empty($rb))
+				$context['mrb_modify']['recyclingboard'] = $rb; 
+			if(!empty($rcbs))
+				$context['mrb_modify']['affected_boards'] = $rcbs;
+	
+			if(empty($context['mrb_errors'])){
+				$rcbs = implode(',',$rcbs);
+				wesql::query('UPDATE {db_prefix}morerecyclingboards SET id_recyclingboard={int:id_recyclingboard}, boards={string:boards} WHERE id_recyclingboard={int:id_recyclingboard_old}', array('id_recyclingboard' => $rb, 'boards' => $rcbs, 'id_recyclingboard_old' => $edit_id));
+				$context['mrb_success'][] = $txt['mrb_success_recyclingboard_modified'];
+			}
+
+
+		}
+		$context['page_title'] = $txt['mrb'];
+		wetem::load('mrb_modify');
+
+	}else{
+		// Uuuuh errors... show main
+		MainRecyclingBins();
+
+	}
+	
 
 }

@@ -17,6 +17,7 @@ $txt['mrb_childboards'] = "Betroffene Foren";
 
 $txt['mrb_success_recyclingboard_added'] = 'Müllforum wurde erfolgreich hinzugefügt';
 $txt['mrb_success_recyclingboard_deleted'] = 'Müllforum wurde erfolgreich gelöscht';
+$txt['mrb_success_recyclingboard_modified'] = 'Müllforum wurde erfolgreich bearbeitet';
 
 $txt['mrb_error_no_recyclingboard_selected'] = 'Du hast kein Müllforum ausgewählt';
 $txt['mrb_error_no_recyclingboard_childs_selected'] = 'Du hast keine betroffene Foren ausgewählt';
