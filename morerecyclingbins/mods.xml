@@ -30,4 +30,30 @@
 	</operation>
 
 
+
+	<operation>
+		<search position="after">if (!empty($settings['recycle_enable']) && $row['id_board'] != $settings['recycle_board'] && $row['icon'] != 'recycled')
+	{</search>
+		<add>
+		// Here we overwrite $settings['recycle_board'] (in removeMessage this is the easier way)
+		loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
+		$recyclingBins = get_morerecyclingbins();
+		$recycle_board = find_recyclingboard($recyclingBins, $row['id_board']);
+		if($recycle_board != false)
+			$old_recycle_board = $settings['recycle_board']; // we need that later!
+			$settings['recycle_board'] = $recycle_board; // we are lazy just overwrite it
+		
+		</add>
+	</operation>
+
+	<operation>
+		<search position="after">updateLastMessages($row['id_board']);</search>
+		<add>
+		if($recycle == true && isset($old_recycle_board))
+			$settings['recycle_board'] = $old_recycle_board; // set it back otherwise we would maybe break something
+		</add>
+	</operation>
+
+
+
 </file>
