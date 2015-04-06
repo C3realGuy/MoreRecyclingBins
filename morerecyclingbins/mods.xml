@@ -1,56 +1,86 @@
 <file name="RemoveTopic.php">
 	<operation>
-		<search position="after">$recycleTopics[] = $row['id_topic'];</search>
+		<search position="replace">if (!empty($settings['recycle_enable']) && $settings['recycle_board'] > 0 && !$ignoreRecycling)</search>
 		<add>
-				if(!isset($recycleBoards[$row['id_board']]))
-					$recycleBoards[$row['id_board']] = array();
-				$recycleBoards[$row['id_board']][] = $row['id_topic'];
+	loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
+	$recyclingBins = get_morerecyclingbins();
+	if(((!empty($settings['recycle_enable']) && $settings['recycle_board'] > 0) || !empty($recyclingBins)) && !$ignoreRecycling)
 		</add>
 	</operation>
 	<operation>
 		<search position="after">$recycleTopics = array();</search>
 		<add>
 			// MoreRecyclingBoards: We need another array where save know in wich board the topic is
-			$recycleBoards = array();
+			$recycleTopicTo = array();
 		</add>
 	</operation>
+	<operation>
+		<search position="replace">$recycleTopics[] = $row['id_topic'];</search>
+		<add>
+				$mrb_recycle_board = find_recyclingboard($recyclingBins, $row['id_board']);
+				if((!empty($settings['recycle_enable']) || $mrb_recycle_board != false) && !in_array($row['id_board'], array_merge(array_keys($recyclingBins), array($settings['recycle_board'])))){
+					$moveTo = $settings['recycle_board'];
+					if($mrb_recycle_board != false)
+						$moveTo = $mrb_recycle_board;
+					if(!isset($recycleTopicTo[$moveTo]))
+						$recycleTopicTo[$moveTo] = array();
+					$recycleTopicTo[$moveTo][] = $row['id_topic'];
+					$recycleTopics[] = $row['id_topic'];
+
+				}
+
+				
+		</add>
+	</operation>
+	<operation>
+		<search position="after">// Set the id_previous_board for this topic - and unpin it.</search>
+		<add>
+				if(isset($recycleTopics[$row['id_topic']])) // hacky but we only want to update id_previous if this topic will be moved</add>
+	</operation>
+	<operation>
+		<search position="before">wesql::query('
+				UPDATE {db_prefix}messages
+				SET icon = {literal:recycled}</search>
+		<add>if(!empty($recycleTopics)){</add>
+	</operation>
+	<operation>
+		<search position="after">$topics = array_diff($topics, $recycleTopics);</search>
+		<add>}</add>
+	</operation>
+
 	<operation>
 		<search position="replace">moveTopics($recycleTopics, $settings['recycle_board']);</search>
 		<add>
 			// Here we overwrite the move stuff
-			loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
-			$recyclingBins = get_morerecyclingbins();
-			foreach($recycleBoards as $board => $topis){
-				$recycle_board = find_recyclingboard($recyclingBins, $board);
-				$recycle_board = ($recycle_board != false ? $recycle_board : $settings['recycle_board']);
-				moveTopics($topics, $recycle_board);
+			foreach($recycleTopicTo as $moveTo => $topis){
+				moveTopics($topics, $moveTo);
 
 			}
 </add>
 	</operation>
 
-
-
 	<operation>
-		<search position="after">if (!empty($settings['recycle_enable']) && $row['id_board'] != $settings['recycle_board'] && $row['icon'] != 'recycled')
+		<search position="replace">if (!empty($settings['recycle_enable']) && $row['id_board'] != $settings['recycle_board'] && $row['icon'] != 'recycled')
 	{</search>
 		<add>
+	loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
+	$recyclingBins = get_morerecyclingbins();
+	$recycle_board = find_recyclingboard($recyclingBins, $row['id_board']);
+	if((!empty($settings['recycle_enable']) || $recycle_board != false) && !in_array($row['id_board'], array_merge(array_keys($recyclingBins), array($settings['recycle_board']))) && $row['icon'] != 'recycled')
+	{
 		// Here we overwrite $settings['recycle_board'] (in removeMessage this is the easier way)
-		loadPluginSource('CerealGuy:MoreRecyclingBins', 'Subs-MoreRecyclingBins');
-		$recyclingBins = get_morerecyclingbins();
-		$recycle_board = find_recyclingboard($recyclingBins, $row['id_board']);
-		if($recycle_board != false)
+		if($recycle_board != false){
 			$old_recycle_board = $settings['recycle_board']; // we need that later!
 			$settings['recycle_board'] = $recycle_board; // we are lazy just overwrite it
-		
+		}
 		</add>
 	</operation>
 
 	<operation>
 		<search position="after">updateLastMessages($row['id_board']);</search>
 		<add>
-		if($recycle == true && isset($old_recycle_board))
-			$settings['recycle_board'] = $old_recycle_board; // set it back otherwise we would maybe break something
+	if($recycle == true && isset($old_recycle_board))
+		$settings['recycle_board'] = $old_recycle_board; // set it back otherwise we would maybe break something
 		</add>
 	</operation>
 
