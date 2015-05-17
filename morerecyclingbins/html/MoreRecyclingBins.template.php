@@ -39,7 +39,7 @@ function template_mrb_main(){
 	echo '
                                 </tbody>
                                </table>
-                </div><div class="right"><input type="submit" value="'.$txt['mrb_add'].'" onclick="window.location.href = \'index.php?action=admin;area=topuploads;sa=add\'"></input></div>
+                </div><div class="right"><input type="submit" value="'.$txt['mrb_add'].'" onclick="window.location.href = \'index.php?action=admin;area=morerecyclingbins;sa=add\'"></input></div>
 			</div>
 	</div>
 	<br class="clear">';
