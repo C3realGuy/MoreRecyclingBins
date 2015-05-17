@@ -16,7 +16,7 @@
 					<column name="boards" type="varchar"/>	
 				</columns>
 				<index type="primary">
-					<field>id</field>
+					<field>id_recyclingboard</field>
 				</index>
 			</table>
 
