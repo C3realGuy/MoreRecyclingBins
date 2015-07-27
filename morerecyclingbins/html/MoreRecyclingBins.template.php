@@ -47,7 +47,7 @@ function template_mrb_main(){
 }
 function template_mrb_modify(){
 	global $context, $txt;
-	echo '<form action="/wedge/index.php?action=admin;area=morerecyclingbins;sa='.$context['mrb_modify']['type'].';save'.($context['mrb_modify']['type'] == 'modify' ? '&id='.$context['mrb_modify']['recyclingboard'] : '').'" method="post" accept-charset="UTF-8">
+	echo '<form action="<URL>?action=admin;area=morerecyclingbins;sa='.$context['mrb_modify']['type'].';save'.($context['mrb_modify']['type'] == 'modify' ? '&id='.$context['mrb_modify']['recyclingboard'] : '').'" method="post" accept-charset="UTF-8">
 			<div class="windowbg2 wrc">
 				<dl class="settings">';
 
