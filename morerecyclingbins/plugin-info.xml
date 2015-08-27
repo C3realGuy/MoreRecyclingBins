@@ -13,7 +13,7 @@
 			<table if-exists="update" name="{db_prefix}morerecyclingboards">
 				<columns>
 					<column name="id_recyclingboard" type="mediumint" unsigned="yes"/>
-					<column name="boards" type="varchar"/>	
+					<column name="boards" type="mediumtext"/>	
 				</columns>
 				<index type="primary">
 					<field>id_recyclingboard</field>
